@@ -38,11 +38,13 @@ function createGroups(g, data, layout, arc, color, total, formatPercent) {
       return color(data[i].name)
     })
     .attr("d",arc)
+    .attr("class","groups")
     .attr("id", function(d,i) { 
       return "stationId_" + i;  //Unique id for each slice
     });
+    
 
-  // Append the title
+  // We append the title
   var fontSize = 14;
   var fontWidth = fontSize/2;
   var chartRadius = (arc.innerRadius()(layout.groups[0]));
@@ -54,6 +56,7 @@ function createGroups(g, data, layout, arc, color, total, formatPercent) {
     .append("textPath")
     .style("font-size", fontSize +"px")
     .style("fill", "white")
+    .attr("class","groups")
     .attr("xlink:href",function(d,i){
       return "#stationId_" + i;
     })
@@ -73,7 +76,7 @@ function createGroups(g, data, layout, arc, color, total, formatPercent) {
       }else{
         return label;
       }
-    });
+    });    
 }
 
 /**
@@ -95,16 +98,23 @@ function createChords(g, data, layout, path, color, total, formatPercent) {
      - Afficher un élément "title" lorsqu'une corde est survolée par la souris.
   */
 
+  var group = g.append("g")
+    .selectAll("g")
+    .data(layout)
+    .enter();
+
   // We add the links between groups
-  g.selectAll()
-  .data(layout)
-  .enter()
-  .append("path")
-  .attr("d", path)
-  .style("fill", function(d){
-    return color(data[d.source.index].name);
-  })
-  .style("opacity", 0.8);
+  group.append("g")
+    .append("path")
+    .attr("class","links")
+    .style("fill", function(d,i){ 
+      return color(data[d.source.index].name);
+    })
+    .attr("id", function(d,i) { 
+      return "linkId_" + i;  //Unique id for each slice
+    })
+    .attr("d", path)
+    .style("opacity", 0.8);
 }
 
 /**
@@ -119,4 +129,49 @@ function initializeGroupsHovered(g) {
      - Rétablir l'affichage du diagramme par défaut lorsque la souris sort du cercle du diagramme.
   */
 
+  function sameGroup(input,other){
+    var theIndex = input.index;
+
+    if(other.source.index == theIndex){
+      return true;
+    }
+
+    if(other.target.index == theIndex){
+      return true;
+    }
+
+    return false;
+  }
+
+  g.selectAll(".groups")
+    .on("mouseover", function(d) {
+
+      var links = g.selectAll(".links");
+      links.filter(function(x){
+        return !sameGroup(d,x);
+      }).style("opacity",0.1);
+      
+    })
+    .on("mouseout", function(d) {
+      var links = g.selectAll(".links");
+      links.filter(function(x){
+        return !sameGroup(d,x);
+      }).style("opacity",0.8);
+    });
+
+    g.selectAll(".links")
+    .on("mouseover", function(d) {
+
+      var links = g.selectAll(".links");
+      links.filter(function(x){
+        return !sameGroup(d.source,x);
+      }).style("opacity",0.1);
+      
+    })
+    .on("mouseout", function(d) {
+      var links = g.selectAll(".links");
+      links.filter(function(x){
+        return !sameGroup(d.source,x);
+      }).style("opacity",0.8);
+    });
 }
