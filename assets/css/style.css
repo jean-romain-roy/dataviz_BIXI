@@ -155,3 +155,15 @@ rect:hover {
   position: absolute;
   text-align: center;
 }
+
+div.tooltip {	
+  position: absolute;	
+  display: inline;		
+  text-align: center;			
+  padding: 4px;	
+  font-size: 10px;	
+  background: #fff;		
+  pointer-events: none;			
+  border: 1px solid black;
+}
+
